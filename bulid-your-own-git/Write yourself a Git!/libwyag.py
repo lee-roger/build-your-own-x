@@ -10,6 +10,6 @@ import re
 import sys
 import zlib
 
-
-if __name__ == '__main__':
+def main():
     print("hello world")
+
