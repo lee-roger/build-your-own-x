@@ -59,10 +59,79 @@ Commands:
   {}
 
 ~~~
-因为现在还没有命令，所以Commands是空的：{}
+因为现在还没有命令，所以Commands是空的：{ }
 
 如果要求运行脚本时必须提供一个子命令，则可以使用以下代码
 ~~~python
 argsubparsers.required=True
-
 ~~~
+
+## 创建主入口函数main
+代码如下：
+~~~python
+def main(argv=sys.argv[1:]):
+    args = argparser.parse_args(argv)
+    match args.command:
+        case "add"          : cmd_add(args)
+        case "cat-file"     : cmd_cat_file(args)
+        case "check-ignore" : cmd_check_ignore(args)
+        case "checkout"     : cmd_checkout(args)
+        case "commit"       : cmd_commit(args)
+        case "hash-object"  : cmd_hash_object(args)
+        case "init"         : cmd_init(args)
+        case "log"          : cmd_log(args)
+        case "ls-files"     : cmd_ls_files(args)
+        case "ls-tree"      : cmd_ls_tree(args)
+        case "rev-parse"    : cmd_rev_parse(args)
+        case "rm"           : cmd_rm(args)
+        case "show-ref"     : cmd_show_ref(args)
+        case "status"       : cmd_status(args)
+        case "tag"          : cmd_tag(args)
+        case _              : print("Bad command.")
+~~~
+### 接收参数
+`def main(argv=sys.argv[1:]):`定义一个入口函数，它接受一个参数 `argv`，默认值为 `sys.argv[1:]`
+
+其中`sys` 是 Python 的一个标准库模块，提供对解释器使用或维护的一些变量和函数的访问。
+`sys.argv` 是一个列表，包含了命令行参数。具体来说：
+* `sys.argv[0]`: 是脚本名称。
+* `sys.argv[1:]`: 是传递给脚本的所有额外命令行参数
+
+### 将参数解析，并存入Namespace
+`args = argparser.parse_args(argv)`:解析传递给 main 函数的参数列表 `argv`，并将解析结果存储在 `args` 中。
+`parse_args` 方法将 `argv` 列表中的参数解析为一个 `Namespace` 对象，其中包含了根据定义的命令行参数设置的属性
+>`Namespace` 是 `argparse` 模块中的一个简单类，用于存储解析后的命令行参数。它的主要功能是将命令行参数转换为易于访问的属性，使得开发者可以通过点（.）操作符方便地访问参数值。
+### 测试
+假如我们写了以下代码:
+~~~python
+argparser = argparse.ArgumentParser(description="这是一个简单的git实现")
+argsubparsers = argparser.add_subparsers(title='Commands',dest = 'command')
+argsubparsers.required = True
+
+argsp = argsubparsers.add_parser("init", help="Initialize a new, empty repository.")
+argsp.add_argument("path",
+                   metavar="directory",
+                   nargs="?",
+                   default=".",
+                   help="Where to create the repository.")
+# 定义入口函数
+def main(argv=sys.argv[1:]):
+    print(f'这是sys.argv的输出：{sys.argv}')
+    print(f'这是argv的输出：{argv}')
+    args = argparser.parse_args(argv) # 把参数转换成Namespace命名空间，更加方便处理
+    print(f'这是args的输出：{args}')
+~~~
+
+运行脚本：
+~~~bash
+./wyag init path='dsadadadasd'
+~~~
+
+得到结果如下：
+~~~bash
+这是sys.argv的输出：['./wyag', 'init', 'path=dsadadadasd']
+这是argv的输出：['init', 'path=dsadadadasd']
+这是args的输出：Namespace(command='init', path='path=dsadadadasd')
+~~~
+可以看出他们分贝是列表和Namespace对象
+
