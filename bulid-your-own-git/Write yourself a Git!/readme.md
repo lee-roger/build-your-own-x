@@ -133,5 +133,5 @@ def main(argv=sys.argv[1:]):
 这是argv的输出：['init', 'path=dsadadadasd']
 这是args的输出：Namespace(command='init', path='path=dsadadadasd')
 ~~~
-可以看出他们分贝是列表和Namespace对象
+可以看出他们分别是列表和Namespace对象
 
