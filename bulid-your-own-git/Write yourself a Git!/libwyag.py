@@ -9,7 +9,23 @@ import os
 import re
 import sys
 import zlib
+# 创建一个解析器对象
+argparser = argparse.ArgumentParser(description="这是一个简单的git实现")
+argsubparsers = argparser.add_subparsers(title='Commands',dest = 'command')
+argsubparsers.required = True
 
-def main():
-    print("hello world")
+#argsp = argsubparsers.add_parser("init", help="Initialize a new, empty repository.")
+
+
+def main(argv=sys.argv[1:]):
+    args = argparser.parse_args(argv)
+    match args.command:
+
+        case "init"         : cmd_init(args)
+
+        case _              : print("Bad command.")
+
+
+def cmd_init(args):
+    print(args)
 
