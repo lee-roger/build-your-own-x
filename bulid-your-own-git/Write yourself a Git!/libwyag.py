@@ -14,12 +14,7 @@ argparser = argparse.ArgumentParser(description="这是一个简单的git实现"
 argsubparsers = argparser.add_subparsers(title='Commands',dest = 'command')
 argsubparsers.required = True
 
-argsp = argsubparsers.add_parser("init", help="Initialize a new, empty repository.")
-argsp.add_argument("path",
-                   metavar="directory",
-                   nargs="?",
-                   default=".",
-                   help="Where to create the repository.")
+
 
 # 仓库类
 class GitRespository(object):
@@ -142,11 +137,18 @@ def repo_create(path):
     return repo
 
 
+# 创建命令行
+argsp = argsubparsers.add_parser("init", help="Initialize a new, empty repository.")
 
+argsp.add_argument("path",   # 参数的名称：init path
+                   metavar="directory",   # 代表该参数的别称
+                   nargs="?",             #参数数量,表示该参数是可选的，即用户可以选择提供或不提供这个参数。不提供，那么就用default里的
+                   default=".",           #.表示当前路径
+                   help="Where to create the repository.")
 
 
 def cmd_init(args):
-    print(args)
+    repo_create(args.path)
 
 # --------------------------- init -----------------------------------------------
 
