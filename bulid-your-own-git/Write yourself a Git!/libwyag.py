@@ -25,8 +25,35 @@ def cmd_add(args):
     pass
 
 
+# --------------------------- init -----------------------------------------------
+# 仓库类
+class GitRespository(object):
+
+    worktree = None
+    gitdir = None
+    conf = None
+
+    # force参数：强制检查
+    def __init__(self,path,force=False):
+        self.worktree = path
+        self.gitdir = os.path.join(path,'.git')
+
+        # 如果检查失败
+        if not(force or os.path.isdir(self.gitdir)):
+            raise Exception(f"Not a Git respository {path}")
+
+        #
+        self.conf = configparser.ConfigParser()
+        cf = repo_file(self,'config')
+
+
+
 def cmd_init(args):
     print(args)
+
+# --------------------------- init -----------------------------------------------
+
+
 
 # 定义入口函数
 def cmd_cat_file(args):
