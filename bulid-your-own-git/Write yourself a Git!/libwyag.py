@@ -37,7 +37,7 @@ class GitRespository(object):
         cf = repo_file(self,"config") # 创建一个./git/config文件
 
         if cf and os.path.exists(cf):
-            self.conf.read([cf]) # 表示一个列表传入，这样既可以传入一个参数又可以传入多个参数
+            self.conf.read([cf]) # 表示一个列表传入，这样既可以传入一个参数又可以传入多个
         elif not force:
             raise Exception("Configuration file missing")
 
@@ -80,12 +80,12 @@ def repo_dir(repo,*path,mkdir=False):
 
 
 # 方法：创建文件
-def repo_file(repo,*path,midir=False):
+def repo_file(repo,*path,mkdir=False):
     """Same as repo_path, but create dirname(*path) if absent.  For
     example, repo_file(r, \"refs\", \"remotes\", \"origin\", \"HEAD\") will create
     .git/refs/remotes/origin. 只创建文件的文件夹，而不创建文件，返回文件的路径"""
 
-    if repo_dir(repo,*path[:-1],midir):
+    if repo_dir(repo,*path[:-1],mkdir=mkdir):
         return repo_path(repo,*path)
 
 # 方法：设置默认的配置
