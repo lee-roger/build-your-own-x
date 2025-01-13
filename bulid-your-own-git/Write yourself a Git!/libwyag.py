@@ -21,11 +21,6 @@ argsp.add_argument("path",
                    default=".",
                    help="Where to create the repository.")
 
-def cmd_add(args):
-    pass
-
-
-# --------------------------- init -----------------------------------------------
 # 仓库类
 class GitRespository(object):
 
@@ -33,7 +28,7 @@ class GitRespository(object):
     gitdir = None
     conf = None
 
-    # force参数：强制检查
+    # force参数：该参数禁用所有检查
     def __init__(self,path,force=False):
         self.worktree = path
         self.gitdir = os.path.join(path,'.git')
@@ -42,9 +37,111 @@ class GitRespository(object):
         if not(force or os.path.isdir(self.gitdir)):
             raise Exception(f"Not a Git respository {path}")
 
-        #
-        self.conf = configparser.ConfigParser()
-        cf = repo_file(self,'config')
+        #处理配置文件
+        self.conf = configparser.ConfigParser() # 用于读取配置文件的对象
+        cf = repo_file(self,"config") # 创建一个./git/config文件
+
+        if cf and os.path.exists(cf):
+            self.conf.read([cf]) # 表示一个列表传入，这样既可以传入一个参数又可以传入多个参数
+        elif not force:
+            raise Exception("Configuration file missing")
+
+        # 版本检查：不禁用所有检查时生效，即force = False,
+        if not force:
+            vers = int(self.conf.get("core", "repositoryformatversion")) #从 [core] 部分获取 repositoryformatversion 的值。
+            if vers != 0:
+                raise Exception(f"Unsupported repositoryformatversion: {vers}")
+
+
+
+def cmd_add(args):
+    pass
+
+
+# --------------------------- init -----------------------------------------------
+# 方法：构建子路径
+def repo_path(repo,*path):
+    return os.path.join(repo.gitdir,*path)
+
+
+# 方法：创建文件夹
+def repo_dir(repo,*path,mkdir=False):
+    """"与 repo_path 相同，但如果路径不存在且 `mkdir` 为真，则创建 *path 目录"""
+    path = repo_path(repo,*path)
+
+    # 如果文件夹存在了
+    if os.path.exists(path):
+        if(os.path.isdir(path)):
+            return path
+        else:
+            raise Exception(f"Not a direction {path}")
+
+    # 如果文件夹不存在，并且mkdir为真,则创建文件夹
+    if mkdir:
+        os.makedirs(path)
+        return path
+    else:
+        return None
+
+
+# 方法：创建文件
+def repo_file(repo,*path,midir=False):
+    """Same as repo_path, but create dirname(*path) if absent.  For
+    example, repo_file(r, \"refs\", \"remotes\", \"origin\", \"HEAD\") will create
+    .git/refs/remotes/origin. 只创建文件的文件夹，而不创建文件，返回文件的路径"""
+
+    if repo_dir(repo,*path[:-1],midir):
+        return repo_path(repo,*path)
+
+# 方法：设置默认的配置
+def repo_default_config():
+    ret = configparser.ConfigParser()
+
+    ret.add_section("core")
+    ret.set("core", "repositoryformatversion", "0")
+    ret.set("core", "filemode", "false")
+    ret.set("core", "bare", "false")
+
+    return ret
+
+# 方法：创建仓库
+def repo_create(path):
+    """在path目录下创建一个新的仓库"""
+    #在创建时不强制检查
+    repo = GitRespository(path,True)
+
+    # 确保路径存在并且不为空文件夹,如果没有，则创建
+    if os.path.exists(repo.worktree):
+        if not os.path.isdir(repo.worktree):
+            raise Exception(f"{path} is not a directory !!!")
+        if os.path.exists(repo.gitdir) and os.listdir(repo.gitdir):
+            raise Exception(f"{path} is not empty !!!" )
+    else:
+        # 与mkdir相比，makedirs可以创建多层路径
+        os.makedirs(repo.worktree)
+
+    # 断言创建.git目录下的文件夹
+    assert repo_dir(repo,"branches",mkdir=True)
+    assert repo_dir(repo,"objects",mkdir=True)
+    assert repo_dir(repo,"refs","tags",mkdir=True)
+    assert repo_dir(repo,"refs","heads",mkdir=True)
+
+    # 创建文件 .git/description
+    with open(repo_file(repo,"description"),"w") as f:
+        f.write("Unnamed repository; edit this file 'description' to name the repository.\n")
+
+    # 创建文件 ./git/HEAD
+    with open(repo_file(repo,"HEAD"),"w") as f:
+        f.write("ref: refs/heads/master\n")
+
+    # 写入配置文件，在repo初始化中，配置文件已经创建好了，这里就要写入
+    with open(repo_file(repo,"config"),"w") as f:
+        config = repo_default_config()
+        config.write(f)
+
+    return repo
+
+
 
 
 
